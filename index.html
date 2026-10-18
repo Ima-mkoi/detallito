@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hice esto jaskd</title>
+    <!-- Librerías de confeti y animaciones -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+    
+    <style>
+        :root {
+            --primary: #ff9a9e;
+            --bg-dark: #0f0f12;
+            --card-bg: rgba(26, 26, 36, 0.92);
+            --text-main: #ffffff;
+            --text-muted: #b3b3b3;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Roboto, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        #welcome-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(15, 15, 18, 0.95);
+            backdrop-filter: blur(15px);
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .welcome-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 40px 30px;
+            border-radius: 24px;
+            max-width: 360px;
+            width: 100%;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+        }
+
+        .welcome-card h1 {
+            font-size: 24px;
+            margin-bottom: 10px;
+            color: var(--text-main);
+        }
+
+        .welcome-card p {
+            color: var(--text-muted);
+            font-size: 14px;
+            margin-bottom: 25px;
+        }
+
+        .start-btn {
+            background: var(--primary);
+            color: #000;
+            border: none;
+            padding: 14px 32px;
+            border-radius: 30px;
+            font-weight: 700;
+            font-size: 15px;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 5px 20px rgba(255, 154, 158, 0.4);
+        }
+
+        .start-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 8px 25px rgba(255, 154, 158, 0.6);
+        }
+
+        #bg-cats {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        .floating-cat {
+            position: absolute;
+            font-size: 22px;
+            animation: float-up linear infinite;
+            opacity: 0.5;
+        }
+
+        @keyframes float-up {
+            0% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
+            10% { opacity: 0.6; }
+            90% { opacity: 0.6; }
+            100% { transform: translateY(-10vh) rotate(360deg); opacity: 0; }
+        }
+
+        .card-container {
+            background: var(--card-bg);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 24px;
+            padding: 25px 30px;
+            max-width: 420px;
+            width: 100%;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.6);
+            text-align: center;
+            backdrop-filter: blur(12px);
+            position: relative;
+            z-index: 10;
+        }
+
+        .music-player {
+            margin-bottom: 15px;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 10px 16px;
+            border-radius: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border: 1px solid rgba(255,255,255,0.08);
+        }
+
+        .player-controls {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .control-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-main);
+            font-size: 14px;
+            cursor: pointer;
+            padding: 4px;
+            transition: color 0.2s;
+        }
+
+        .control-btn:hover {
+            color: var(--primary);
+        }
+
+        .play-btn {
+            background: var(--primary);
+            color: #000;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 3px 10px rgba(255, 154, 158, 0.3);
+        }
+
+        .music-info {
+            font-size: 12px;
+            color: #ddd;
+            text-align: right;
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+            max-width: 180px;
+        }
+
+        .music-info strong {
+            display: block;
+            color: #fff;
+            font-size: 13px;
+        }
+
+        .tag {
+            background: rgba(255, 154, 158, 0.15);
+            color: var(--primary);
+            font-size: 11px;
+            font-weight: 800;
+            padding: 6px 14px;
+            border-radius: 20px;
+            display: inline-block;
+            margin-bottom: 15px;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+        }
+
+        .cat-gif-container {
+            width: 100%;
+            height: 180px; /* Altura fija para mantener orden */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 15px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 16px;
+            padding: 10px;
+            overflow: hidden;
+        }
+
+        .cat-gif {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain; /* Evita que el GIF se corte o deforme */
+            border-radius: 12px;
+        }
+
+        .content {
+            min-height: 120px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        h2 {
+            font-size: 21px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            color: var(--text-main);
+        }
+
+        p {
+            color: var(--text-muted);
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .dots {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin: 20px 0;
+        }
+
+        .dot {
+            width: 8px;
+            height: 8px;
+            background: #444;
+            border-radius: 50%;
+            transition: all 0.3s;
+        }
+
+        .dot.active {
+            background: var(--primary);
+            width: 22px;
+            border-radius: 11px;
+        }
+
+        .btn {
+            background: var(--primary);
+            color: #000;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            font-weight: 700;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(255, 154, 158, 0.3);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255, 154, 158, 0.5);
+        }
+    </style>
+</head>
+<body>
+
+    <div id="welcome-overlay">
+        <div class="welcome-card animate__animated animate__zoomIn">
+            <h1>¡Hola! 👋✨</h1>
+            <p>Hice este pequeño detalle especial para ti. Sube el volumen un poco y dale al botón jksad.
+                "OJO: LAS 3 CANCIONES SON ALEATORIAS JASKD NOSE Q CANCIONES TE GUSTAN ASI Q PUSE CUALQUIERA SI QUIERES NO ES NECESARIO ESCUCHARLAS JADKJAS"
+            </p>
+            <button class="start-btn" onclick="startExperience()">Presiona aquí 🐾</button>
+        </div>
+    </div>
+
+    <div id="bg-cats"></div>
+
+    <div class="card-container animate__animated animate__fadeInUp">
+ 
+        <div class="music-player">
+            <div class="player-controls">
+                <button class="control-btn" onclick="prevSong()">⏮</button>
+                <button class="control-btn play-btn" id="play-btn" onclick="toggleMusic()">▶</button>
+                <button class="control-btn" onclick="nextSong()">⏭</button>
+            </div>
+            <div class="music-info">
+                <strong id="song-title">Cargando...</strong>
+                <span id="song-artist">Artista</span>
+            </div>
+            <!-- Etiqueta Audio HTML5 -->
+            <audio id="bg-music"></audio>
+        </div>
+
+        <span class="tag" id="step-tag">PASO 1 DE 4</span>
+
+        <div class="cat-gif-container">
+            <img id="cat-img" class="cat-gif animate__animated animate__fadeIn" src="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExbnFlOXB3eXEzbmN3bmt2dHd5aDZwbG8ycWllcjB4czF2YmdmdmV4YiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/VbnUQpnihPSIgIXuZv/giphy.gif" alt="Gatito cute">
+        </div>
+        
+        <div class="content">
+            <h2 id="card-title" class="animate__animated animate__fadeIn">¿Quién diría? 🐾</h2>
+            <p id="card-text" class="animate__animated animate__fadeIn">Hace poquito más de un mes empezamos a hablar de la nada y terminó siendo una súper buena decisión pasar por aquí a saludarte.</p>
+        </div>
+
+        <div class="dots">
+            <div class="dot active" id="dot0"></div>
+            <div class="dot" id="dot1"></div>
+            <div class="dot" id="dot2"></div>
+            <div class="dot" id="dot3"></div>
+        </div>
+
+        <button class="btn" id="next-btn" onclick="nextCard()">Siguiente ➔</button>
+    </div>
+
+    <script>
+        const playlist = [
+            {
+                title: "Pinta Nomá",
+                artist: "Jaze",
+                src: "pinta.mp3"
+            },
+            {
+                title: "Las consecuencias",
+                artist: "Jaze",
+                src: "lascon.mp3"
+            },
+            {
+                title: "Buscarte lejos",
+                artist: "Duki",
+                src: "buscar.mp3"
+            }
+        ];
+
+        let currentSongIndex = 0;
+        const audio = document.getElementById('bg-music');
+        const playBtn = document.getElementById('play-btn');
+        const songTitleEl = document.getElementById('song-title');
+        const songArtistEl = document.getElementById('song-artist');
+        let isPlaying = false;
+
+        function loadSong(index) {
+            const song = playlist[index];
+            audio.src = song.src;
+            songTitleEl.innerText = song.title;
+            songArtistEl.innerText = song.artist;
+        }
+
+        function playSong() {
+            audio.play().then(() => {
+                isPlaying = true;
+                playBtn.innerText = '⏸';
+            }).catch(err => {
+                console.log("Esperando interacción del usuario para reproducir audio.");
+            });
+        }
+
+        function pauseSong() {
+            audio.pause();
+            isPlaying = false;
+            playBtn.innerText = '▶';
+        }
+
+        function toggleMusic() {
+            if (isPlaying) {
+                pauseSong();
+            } else {
+                playSong();
+            }
+        }
+
+        function nextSong() {
+            currentSongIndex = (currentSongIndex + 1) % playlist.length;
+            loadSong(currentSongIndex);
+            playSong();
+        }
+
+        function prevSong() {
+            currentSongIndex = (currentSongIndex - 1 + playlist.length) % playlist.length;
+            loadSong(currentSongIndex);
+            playSong();
+        }
+
+        audio.onended = function() {
+            nextSong();
+        };
+
+        function startExperience() {
+            document.getElementById('welcome-overlay').style.display = 'none';
+            loadSong(0);
+            playSong();
+        }
+
+        const catIcons = ['🐱', '😸', '🐾', '😻', '✨'];
+        const bgContainer = document.getElementById('bg-cats');
+
+        for (let i = 0; i < 18; i++) {
+            const cat = document.createElement('div');
+            cat.classList.add('floating-cat');
+            cat.innerText = catIcons[Math.floor(Math.random() * catIcons.length)];
+            cat.style.left = Math.random() * 100 + 'vw';
+            cat.style.animationDuration = Math.random() * 8 + 6 + 's';
+            cat.style.animationDelay = Math.random() * 5 + 's';
+            bgContainer.appendChild(cat);
+        }
+        const cards = [
+            {
+                tag: "UN PEQUEÑO DETALLE ",
+                title: "Quién diría que esto fuera asi",
+                text: "Hace no mucho empezamos a hablar de la nada todo el dia y q casualidad la verdad me tas haciendo sentir bien.",
+                gif: "https://media0.giphy.com/media/v1.Y2lkPTc5MGI3NjExdTk5Z3cydHJxeHRpNGRzeG1lc3RxeWVoazRoZDdhcGNybzVyY2xkbyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/jOW9yyWVezCB5JJHlD/giphy.gif"
+            },
+            {
+                tag: "TIEMPO VOLANDO ",
+                title: "creo q ya vamos como 2 meses hablando q rapido",
+                text: "Parece poco tiempo, pero ya se volvió costumbre hablar contigo casi todos los días y hablar de cualquier cosa asi sea lo mas random de todo.",
+                gif: "https://media4.giphy.com/media/v1.Y2lkPTc5MGI3NjExYmNoc3Noa3NtemN3ajhwNGZxN3Q1NTQ3eDJ2MWd2ZzJvZzVwYjZ5bCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/TbRkubcqlgBksEqMv4/giphy.gif"
+            },
+            {
+                tag: "RESUMEN HASTA AHORA ",
+                title: "Lo mejor de estas semanas y me siento bien",
+                text: "Nuestras charlas random, quedandonos hasta tarde hablando y lo bien que se siente tener a alguien con quien hablar siempre me haces sentir bien.",
+                gif: "https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExbHh3MHRrZmhvdzRlbDN4bWsxZ2M4aGp1NGRyYTFqcmkwYjNlYnZmbSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/93mS3A87wfmOySC29W/giphy.gif"
+            },
+            {
+                tag: "CERO DUDAS ",
+                title: "En fin",
+                text: "Solo quería hacerte este detalle web ya q toy practicando esto jsdjk para sacarte una sonrisa hoy. Q te vaya bien siempre :b",
+                gif: "https://media0.giphy.com/media/v1.Y2lkPTc5MGI3NjExbGdjODcyYm56N2l2dTFvZDY1ZjdwajVhcmJ5bHp0a2Z0M2RhN2VydyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/XPoKNvkweSo4WdZA50/giphy.gif"
+            }
+        ];
+
+        let currentIndex = 0;
+
+        function renderCard() {
+            const card = cards[currentIndex];
+            const titleEl = document.getElementById('card-title');
+            const textEl = document.getElementById('card-text');
+            const imgEl = document.getElementById('cat-img');
+            const tagEl = document.getElementById('step-tag');
+            
+            titleEl.classList.remove('animate__fadeIn');
+            textEl.classList.remove('animate__fadeIn');
+            imgEl.classList.remove('animate__fadeIn');
+            
+            void titleEl.offsetWidth;
+
+            tagEl.innerText = card.tag;
+            titleEl.innerText = card.title;
+            textEl.innerText = card.text;
+            imgEl.src = card.gif;
+
+            titleEl.classList.add('animate__fadeIn');
+            textEl.classList.add('animate__fadeIn');
+            imgEl.classList.add('animate__fadeIn');
+
+            for (let i = 0; i < cards.length; i++) {
+                document.getElementById(`dot${i}`).classList.toggle('active', i === currentIndex);
+            }
+
+            const btn = document.getElementById('next-btn');
+            if (currentIndex === cards.length - 1) {
+                btn.innerText = "¡Listo! 🎉";
+            } else {
+                btn.innerText = "Siguiente ➔";
+            }
+        }
+
+        function nextCard() {
+            if (currentIndex < cards.length - 1) {
+                currentIndex++;
+                renderCard();
+            } else {
+                confetti({
+                    particleCount: 150,
+                    spread: 90,
+                    origin: { y: 0.6 },
+                    colors: ['#ff9a9e', '#ffffff', '#fecfef']
+                });
+            }
+        }
+
+        loadSong(0);
+        renderCard();
+    </script>
+</body>
+</html>
